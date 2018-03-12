@@ -56,7 +56,7 @@ class Pattern extends React.Component {
     let sideAngle = (180 - angle) / 2;
     let sideAngleRads = sideAngle * (Math.PI / 180);
     let metaTemplate = {
-      svg: this.generatePatternUnitSvg({template}),
+      svg: this.generatePatternUnit({template}).svg,
       width: template.width,
       height: Math.tan(2 * sideAngleRads) * (template.width / 2),
       degree: 6,
@@ -65,7 +65,7 @@ class Pattern extends React.Component {
     return this.generateTileSvgForDegree6({template: metaTemplate});
   }
 
-  generatePatternUnitSvg(opts) {
+  generatePatternUnit(opts) {
     let {template} = opts;
     let {svg: templateSymbol, id: symbolId} = this._wrapInSymbol({
       svg: template.svg
@@ -92,7 +92,7 @@ class Pattern extends React.Component {
       patternHeight = 2 * template.height;
       transform = `transform="translate(${(template.width / 2)} 0)"`
     }
-    return (`
+    let svg = (`
       <svg ${Cfg.svgXmlns} width="${patternWidth}" height="${patternHeight}">
         ${templateSymbol}
         <g ${transform}>
@@ -100,12 +100,19 @@ class Pattern extends React.Component {
         </g>
       </svg>
     `);
+    return {
+      svg,
+      width: patternWidth,
+      height: patternHeight,
+    };
   }
 
   generateTileSvgForDegree6 (opts) {
     let {template} = opts;
-    let tileWidth = template.width;
-    let tileHeight = 2 * template.height;
+    let patternUnit = this.generatePatternUnit({template});
+    let unitSymbol = this._wrapInSymbol({svg: patternUnit.svg});
+    let tileWidth = patternUnit.width * 1.5;
+    let tileHeight = patternUnit.height;
     let clipId = this._generateRandomId({prefix: 'clip-'});
     let clipDef = (`
       <clipPath id="${clipId}">
@@ -114,11 +121,24 @@ class Pattern extends React.Component {
     `);
     return (`
       <svg ${Cfg.svgXmlns} width="${tileWidth}" height="${tileHeight}">
-        <defs>${clipDef}</defs>
+        <defs>
+          ${clipDef}
+          ${unitSymbol.svg}
+        </defs>
         <g clip-path="url(#${clipId})">
-          <g transform="translate(${-template.width / 2} 0)">
-            ${this.generatePatternUnitSvg({template})}
-          </g>
+          <use href="#${unitSymbol.id}" x="0" y="0"/>
+          <use href="#${unitSymbol.id}"
+            x="${patternUnit.width * .75}"
+            y="${patternUnit.height / 2}"/>
+          <use href="#${unitSymbol.id}"
+            x="${patternUnit.width * .75}"
+            y="${-patternUnit.height / 2}"/>
+          <use href="#${unitSymbol.id}"
+            x="${-patternUnit.width * .75}"
+            y="${patternUnit.height / 2}"/>
+          <use href="#${unitSymbol.id}"
+            x="${-patternUnit.width * .75}"
+            y="${-patternUnit.height / 2}"/>
         </g>
       </svg>
     `);
