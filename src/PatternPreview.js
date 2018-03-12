@@ -21,12 +21,11 @@ class Pattern extends React.Component {
     };
     if (this.props.template) {
       let tileSvg = this.generateTileSvg({template});
-      window.t = tileSvg;
       let svgDataUri = `data:image/svg+xml;base64,${btoa(tileSvg)}`;
       style.backgroundImage = `url("${svgDataUri}")`;
     }
 
-    return (<div style={style}></div>);
+    return (<div style={style} />);
   }
 
   generateTileSvg (opts) {

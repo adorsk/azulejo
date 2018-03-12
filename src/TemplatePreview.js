@@ -7,18 +7,17 @@ class TemplatePreview extends React.Component {
     if (! template) {
       return (<div>no template</div>);
     }
-    let svgStyle = {
-      width: 400,
-      height: 200,
+    let containerStyle = {
+      maxWidth: 400,
+      maxHeight: 200,
       border: 'thin solid gray',
+      padding: 10,
+      margin: 'auto',
     };
-    let padding = 10;
     return (
       <div>
-        <svg style={svgStyle}>
-          <svg x={padding} y={padding} width={svgStyle.width - 2 * padding}
-              dangerouslySetInnerHTML={{__html: template.svg}} />
-        </svg>
+        <div style={containerStyle}
+          dangerouslySetInnerHTML={{__html: template.svg}} />
       </div>
     );
   }

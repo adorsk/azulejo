@@ -10,7 +10,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      degree: 3,
+      degree: 6,
       template: null,
     }
   }
@@ -23,7 +23,7 @@ class App extends Component {
           <label>degree</label>
           <input type="number" value={this.state.degree}
            onChange={(e) => {
-             this.setState({degree: e.target.value});
+             this.setState({degree: parseInt(e.target.value)});
            }}
           />
         </div>
