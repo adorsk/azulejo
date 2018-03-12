@@ -4,6 +4,7 @@ import TemplatePreview from './TemplatePreview';
 import PatternPreview from './PatternPreview';
 import Cfg from './Cfg';
 import Utils from './Utils';
+import {Radio, RadioGroup} from './RadioInputs';
 
 
 class App extends Component {
@@ -21,11 +22,13 @@ class App extends Component {
       <div className="App">
         <div>
           <label>degree</label>
-          <input type="number" value={this.state.degree}
-           onChange={(e) => {
-             this.setState({degree: parseInt(e.target.value)});
-           }}
-          />
+          <RadioGroup name="degree" selectedValue={'' + this.state.degree}
+            onChange={(nextValue) => {
+             this.setState({degree: parseInt(nextValue)});
+            }}>
+            <Radio value="3" />3
+            <Radio value="6" />6
+          </RadioGroup>
         </div>
         <hr/>
         <TemplatePreview template={template}/>
