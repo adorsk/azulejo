@@ -56,43 +56,94 @@ class App extends Component {
   }
 
   generateTemplate() {
+    let template = {elements: [], outlinePath: null};
     let angle = 360 / this.state.degree;
     let angleRads = angle * (Math.PI / 180);
-    let width = 100;
-    let height = (width / 2) / Math.tan(angleRads / 2);
+    template.width = 100;
+    template.height = (
+      (template.width / 2) / Math.tan(angleRads / 2)
+    );
+    template.rotationPoint = [template.width / 2, template.height];
+    template.degree = this.state.degree;
     let trianglePoints = [
       [0, 0],
-      [width / 2, height],
-      [width, 0],
+      [template.width / 2, template.height],
+      [template.width, 0],
     ];
-    let polyId = Utils.generateRandomId({prefix: 'poly-'});
-    let clipId = Utils.generateRandomId({prefix: 'clip-'});
+    let trianglePath = {
+      tag: 'path',
+      attrs: {
+        d: this.generateD({points: trianglePoints, closed: true})
+      }
+    };
+    template.outlinePath = trianglePath;
+    template.elements.push(this.cloneObj(trianglePath));
     let mesh = this.generateMesh({trianglePoints})
-    let lineSvgs = [];
     for (let i = 0; i < this.state.numLines; i++) {
-      let line = this.generateRandomLine({n: 2, mesh})
-      lineSvgs.push(line.svg);
+      let line = this.generateRandomLine({n: 2, mesh});
+      template.elements.push(line);
     }
-    let svg = (`
-      <svg ${Cfg.svgXmlns} width="${width}" height="${height}">
+    for (let element of template.elements) {
+      for (let colorAttr of ['fill', 'stroke']) {
+        element.attrs[colorAttr] = this.generateRandomColor();
+      }
+      element.attrs['stroke-width'] = this.chooseRandom({
+        n: 1,
+        items: [0, 1, 2, 4, 8],
+      })[0];
+    }
+    template.svg = this.generateSvgForTemplate({template});
+    return template;
+  }
+
+  cloneObj (obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  generateD (opts) {
+    let {points, closed} = Object.assign({closed: false}, opts);
+    let d = `M${points[0].join(' ')}`;
+    for (let i = 1; i < points.length; i++) {
+      d += ` L${points[i].join(' ')}`;
+    }
+    if (closed) {
+      d += 'Z';
+    }
+    return d;
+  }
+
+  generateSvgForTemplate (opts) {
+    let {template} = opts;
+    let clipId = Utils.generateRandomId({prefix: 'clip-'});
+    let elementSvgs = template.elements.map((element) => {
+      return this.generateSvgForElement({element});
+    }).join("\n");
+    return (`
+      <svg ${Cfg.svgXmlns}
+        width="${template.width}" height="${template.height}">
         <defs>
-          <polygon id="${polyId}" points="${this.pointsToPointsStr(trianglePoints)}" />
-          <clipPath id="${clipId}"><use href="#${polyId}"/>
+          <clipPath id="${clipId}">
+            ${this.generateSvgForElement({element: template.outlinePath})}
           </clipPath>
         </defs>
         <g clip-path="url(#${clipId})">
-          <use href="#${polyId}" stroke="blue" stroke-width="2" fill="lime" />
-          ${lineSvgs.join(' ')}
+          ${elementSvgs}
         </g>
       </svg>
     `);
-    return {
-      svg: `${svg}`,
-      width,
-      height,
-      rotationPoint: [width / 2, height],
-      degree: this.state.degree,
-    };
+  }
+
+  generateSvgForElement (opts) {
+    let {element} = opts;
+    let {tag, attrs} = element;
+    return (`<${tag} ${this.attrsObjToStr({attrs})} />`);
+  }
+
+  attrsObjToStr (opts) {
+    let {attrs} = opts;
+    return Object.keys(attrs).map((attr) => {
+      return `${attr}="${attrs[attr]}"`;
+    }).join(' ');
   }
 
   pointsToPointsStr(points) {
@@ -136,23 +187,12 @@ class App extends Component {
   }
 
   generateRandomLine (opts) {
-    opts = Object.assign(
-      {n: 2, stroke: 'purple', strokeWidth: 1},
-      opts
-    );
-    let {n, mesh, stroke, strokeWidth} = opts;
+    let {n, mesh} = Object.assign({n: 2}, opts);
     let points = this.chooseRandom({n, items: mesh.vs});
-    let dStr = `M${points[0].join(' ')}`
-    for (let i = 1; i < points.length; i++) {
-      dStr += ` L${points[i][0]} ${points[i][1]}`;
-    }
-    let svg = (`
-      <path
-        d="${dStr}" 
-        stroke-width="${strokeWidth}"
-        stroke="${stroke}"/>
-    `);
-    return {points, svg};
+    return {
+      tag: 'path',
+      attrs: {d: this.generateD({points})}
+    };
   }
 
   chooseRandom (opts) {
@@ -175,6 +215,14 @@ class App extends Component {
       }
     }
     return Object.values(choices);
+  }
+
+  generateRandomColor (opts) {
+    let h = this._prng.randomInt({min: 0, max: 359});
+    let s = this._prng.randomInt({min: 0, max: 100});
+    let l = this._prng.randomInt({min: 0, max: 100});
+    let a = this._prng.random();
+    return `hsla(${h}, ${s}%, ${l}%, ${a})`;
   }
 }
 
