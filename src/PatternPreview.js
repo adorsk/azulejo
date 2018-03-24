@@ -13,12 +13,7 @@ class Pattern extends React.Component {
     if (! template) {
       return null;
     }
-    let style = {
-      border: 'thin solid gray',
-      margin: 'auto',
-      width: 400,
-      height: 400,
-    };
+    let style = Object.assign({}, this.props.style)
     if (this.props.template) {
       let tileSvg = this.generateTileSvg({template});
       let svgDataUri = `data:image/svg+xml;base64,${btoa(tileSvg)}`;

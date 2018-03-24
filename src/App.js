@@ -6,6 +6,7 @@ import Cfg from './Cfg';
 import Utils from './Utils';
 import {Radio, RadioGroup} from './RadioInputs';
 import Prng from './Prng';
+import { Form } from 'semantic-ui-react';
 
 
 class App extends Component {
@@ -24,34 +25,74 @@ class App extends Component {
     let template = this.generateTemplate();
     return (
       <div className="App">
-        <div>
-          <label>degree</label>
-          <RadioGroup name="degree" selectedValue={'' + this.state.degree}
-            onChange={(nextValue) => {
-             this.setState({degree: parseInt(nextValue, 10)});
-            }}>
-            <Radio value="3" />3
-            <Radio value="6" />6
-          </RadioGroup>
+        <div style={{width: '100vw', height: '100vh', display: 'flex', flexDirection: 'row'}}>
+          <div 
+            style={{
+              height: '100%',
+              width: '250px',
+              padding: '10px',
+              borderRight: 'thin solid gray',
+              backgroundColor: 'black',
+              color: 'gray',
+              resize: 'horizontal',
+            }}
+            >
+            {this.renderLeftCol({ template })}
+          </div>
+          <div style={{height: '100%', flex: '1 1 auto'}}>
+            {this.renderRightCol({ template })}
+          </div>
         </div>
-        <div>
-          <label>seed</label>
-          <input type="number" value={this.state.seed}
-            onChange={(e) => {
-              this.setState({seed: parseInt(e.target.value, 10)});
-            }} />
-        </div>
-        <div>
-          <label>numLines</label>
-          <input type="number" value={this.state.numLines}
-            onChange={(e) => {
-              this.setState({numLines: parseInt(e.target.value, 10)});
-            }} />
-        </div>
-        <hr/>
-        <TemplatePreview template={template}/>
-        <PatternPreview template={template}/>
       </div>
+    );
+  }
+
+  renderLeftCol (opts) {
+    let { template } = opts;
+    return (
+      <div id="left-column">
+        <Form>
+          <Form.Field>
+            <label>degree</label>
+            <RadioGroup name="degree" selectedValue={'' + this.state.degree}
+              onChange={(nextValue) => {
+                this.setState({degree: parseInt(nextValue, 10)});
+              }}>
+              <Radio value="3" />3
+              <Radio value="6" />6
+            </RadioGroup>
+          </Form.Field>
+          <Form.Field>
+            <label>seed</label>
+            <input type="number" value={this.state.seed}
+              onChange={(e) => {
+                this.setState({seed: parseInt(e.target.value, 10)});
+              }} />
+          </Form.Field>
+          <Form.Field>
+            <label># lines</label>
+            <input type="number" value={this.state.numLines}
+              onChange={(e) => {
+                this.setState({numLines: parseInt(e.target.value, 10)});
+              }} />
+          </Form.Field>
+        </Form>
+
+        <div className="grid-bg"
+          style={{marginTop: '2em', border: 'thin solid gray',
+            borderRadius: '5px'}}
+          >
+          <TemplatePreview template={template}/>
+        </div>
+      </div>
+    );
+  }
+
+  renderRightCol (opts) {
+    let { template } = opts;
+    let style = { width: '100%', height: '100%' };
+    return (
+      <PatternPreview template={template} style={style}/>
     );
   }
 
